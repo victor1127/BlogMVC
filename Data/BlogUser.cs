@@ -11,13 +11,13 @@ namespace BlogMVC.Data
     {
         [Required]
         [Display(Name ="First name")]
-        [StringLength(50, ErrorMessage="The {0} must be at least {2} and at most {1}" 
+        [StringLength(50, ErrorMessage="The {0} must be at least {2} and at most {1}",
           MinimumLength = 2)]
         public string FirstName { get; set; }
         
         [Required]
         [Display(Name = "Last name")]
-        [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at most {1}"
+        [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at most {1}",
           MinimumLength = 2)]
         public string LastName { get; set; }
 
@@ -34,7 +34,7 @@ namespace BlogMVC.Data
         [DataType(DataType.Date)]
         [ProtectedPersonalData]
         [Display(Name ="Date of birth")]
-        public DateTime DateOfBith { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         public Gender Gender { get; set; } = Gender.Other;
 
@@ -43,8 +43,8 @@ namespace BlogMVC.Data
 
 
 
-        public ICollection<Blog> Blogs { get; set; } = new HashSet<Blog>();
-        public ICollection<Post> Posts { get; set; } = new HashSet<Post>();
+        //public ICollection<Blog> Blogs { get; set; } = new HashSet<Blog>();
+        //public ICollection<Post> Posts { get; set; } = new HashSet<Post>();
 
 
     }

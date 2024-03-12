@@ -9,7 +9,6 @@ namespace BlogMVC.Models
     {
         public int Id { get; set; }
         public int BlogId { get; set; }
-        [Required]
         public string AuthorId { get; set; }
 
 
@@ -30,7 +29,7 @@ namespace BlogMVC.Models
 
 
         [DataType(DataType.Date)]
-        [Display(Name ="Created date")]
+        [Display(Name = "Created date")]
 
         public DateTime Created { get; set; }
         [DataType(DataType.Date)]
