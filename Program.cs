@@ -12,7 +12,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentity<BlogUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddIdentity<BlogUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddDefaultUI()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -24,12 +24,17 @@ builder.Services.AddScoped<IBlogRepository<Comment>, CommendRepository>();
 builder.Services.AddScoped<IBlogRepository<Tag>, TagRepository>();
 
 builder.Services.AddScoped<ImageService>();
-
+builder.Services.AddScoped<SeedService>();
 
 builder.Services.AddRazorPages();
  
 var app = builder.Build();
 
+using(var scop = app.Services.CreateScope())
+{
+    var SeedService = scop.ServiceProvider.GetRequiredService<SeedService>();
+    await SeedService.ManageDataAsyn();
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

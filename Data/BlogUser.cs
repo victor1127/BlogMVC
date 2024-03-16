@@ -43,8 +43,8 @@ namespace BlogMVC.Data
 
 
 
-        //public ICollection<Blog> Blogs { get; set; } = new HashSet<Blog>();
-        //public ICollection<Post> Posts { get; set; } = new HashSet<Post>();
+        public ICollection<Blog> Blogs { get; set; } = new HashSet<Blog>();
+        public ICollection<Post> Posts { get; set; } = new HashSet<Post>();
 
 
     }
