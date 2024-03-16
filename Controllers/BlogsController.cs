@@ -10,19 +10,23 @@ using BlogMVC.Models;
 using BlogMVC.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using BlogMVC.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlogMVC.Controllers
 {
-    [Authorize]
     public class BlogsController : Controller
     {
         private readonly IBlogRepository<Blog> blogContext;
         private readonly ImageService imageService;
+        private readonly UserManager<BlogUser> signInManager;
 
-        public BlogsController(IBlogRepository<Blog> blogRepository, ImageService imageService)
+        public BlogsController(IBlogRepository<Blog> blogRepository, 
+                                ImageService imageService,
+                                UserManager<BlogUser> manager)
         {
             blogContext = blogRepository;
             this.imageService = imageService;
+            signInManager = manager;    
         }
 
 
@@ -55,19 +59,21 @@ namespace BlogMVC.Controllers
         }
 
 
-
+        [Authorize]
         // GET: Blogs/Create
         public IActionResult Create()
         {
             return View();
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Description,ImageFile")] Blog blog)
         {
             if (ModelState.IsValid)
             {
+                blog.AuthorId = signInManager.GetUserId(User);
                 blog.Created = DateTime.Now;
 
                 if(blog.ImageFile != null)
@@ -83,7 +89,7 @@ namespace BlogMVC.Controllers
         }
 
 
-
+        [Authorize]
         // GET: Blogs/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -99,10 +105,10 @@ namespace BlogMVC.Controllers
         }
 
 
-
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,ImageData")] Blog blog)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,ImageFile")] Blog blog)
         {
             if (id != blog.Id)
             {
@@ -111,6 +117,14 @@ namespace BlogMVC.Controllers
 
             if (ModelState.IsValid)
             {
+                if (blog.ImageFile != null)
+                {
+                    blog.ContentType = blog.ImageFile?.ContentType;
+                    blog.ImageData = imageService.ConvertFileToByte(blog.ImageFile);
+                }
+
+                blog.Updated = DateTime.Now;
+
                 await blogContext.Update(blog);
                 return RedirectToAction(nameof(Index));
             }
@@ -121,6 +135,7 @@ namespace BlogMVC.Controllers
 
 
         // GET: Blogs/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -134,6 +149,7 @@ namespace BlogMVC.Controllers
 
 
         // POST: Blogs/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -142,7 +158,7 @@ namespace BlogMVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
+        [Authorize]
         private bool BlogExists(int id)
         {
             return true;
