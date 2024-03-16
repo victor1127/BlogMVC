@@ -4,6 +4,7 @@ using BlogMVC.Models;
 using BlogMVC.Repositories;
 using BlogMVC.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,13 +26,16 @@ builder.Services.AddScoped<IBlogRepository<Post>, PostRepository>();
 builder.Services.AddScoped<IBlogRepository<Comment>, CommendRepository>();
 builder.Services.AddScoped<IBlogRepository<Tag>, TagRepository>();
 
-builder.Services.AddScoped<ImageService>();
-builder.Services.AddScoped<SeedService>();
-
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailSender, EmailService>();
+
+builder.Services.AddScoped<SeedService>();
+builder.Services.AddScoped<ImageService>();
+
 
 builder.Services.AddRazorPages();
- 
+
+
 var app = builder.Build();
 
 using(var scop = app.Services.CreateScope())

@@ -18,7 +18,7 @@ namespace BlogMVC.Controllers
     {
         private readonly IBlogRepository<Blog> blogContext;
         private readonly ImageService imageService;
-        private readonly UserManager<BlogUser> signInManager;
+        private readonly UserManager<BlogUser> userManager;
 
         public BlogsController(IBlogRepository<Blog> blogRepository, 
                                 ImageService imageService,
@@ -26,7 +26,7 @@ namespace BlogMVC.Controllers
         {
             blogContext = blogRepository;
             this.imageService = imageService;
-            signInManager = manager;    
+            userManager = manager;    
         }
 
 
@@ -73,7 +73,7 @@ namespace BlogMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                blog.AuthorId = signInManager.GetUserId(User);
+                blog.AuthorId = userManager.GetUserId(User);
                 blog.Created = DateTime.Now;
 
                 if(blog.ImageFile != null)

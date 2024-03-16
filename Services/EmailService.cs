@@ -1,8 +1,9 @@
 ﻿using BlogMVC.ConfigurationModels;
 using MailKit.Security;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using MimeKit;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace BlogMVC.Services
 {
@@ -10,9 +11,9 @@ namespace BlogMVC.Services
     {
         private readonly EmailSettings _emailSettings;
 
-        public EmailService(EmailSettings emailSettings)
+        public EmailService(IOptions<EmailSettings> emailSettings)
         {
-            _emailSettings = emailSettings;
+            _emailSettings = emailSettings.Value;
         }
 
         public async Task SendEmailAsync(string emailTo, string subject, string htmlMessage)
