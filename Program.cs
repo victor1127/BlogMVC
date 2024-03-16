@@ -1,9 +1,11 @@
+using BlogMVC.ConfigurationModels;
 using BlogMVC.Data;
 using BlogMVC.Models;
 using BlogMVC.Repositories;
 using BlogMVC.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,8 @@ builder.Services.AddScoped<IBlogRepository<Tag>, TagRepository>();
 
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<SeedService>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddRazorPages();
  
