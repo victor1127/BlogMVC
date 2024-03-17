@@ -79,7 +79,7 @@ namespace BlogMVC.Controllers
                 if(blog.ImageFile != null)
                 {
                     blog.ContentType = blog.ImageFile?.ContentType;
-                    blog.ImageData = imageService.ConvertFileToByte(blog.ImageFile);
+                    blog.ImageData = await imageService.EncodeImageAsync(blog.ImageFile);
                 }
 
                 await blogContext.Add(blog);

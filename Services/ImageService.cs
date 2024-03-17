@@ -1,17 +1,30 @@
-﻿namespace BlogMVC.Services
+﻿using System.IO;
+
+namespace BlogMVC.Services
 {
     public class ImageService
     {
-        public byte[] ConvertFileToByte(IFormFile file)
+        public async Task<byte[]?> EncodeImageAsync(IFormFile file)
         {
-            return null;
+            if (file is null) return null;
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
         }
 
-        public string ConvertByteArrayToFile(byte[] file)
+        public async Task<byte[]?> DecodeImageAsync(string fileName)
         {
-            return null;
+            if (string.IsNullOrEmpty(fileName)) return null;
+
+            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/images/{fileName}";
+            return await File.ReadAllBytesAsync(file);
+        }
+
+        public string DecodeImage(byte[] data, string type)
+        {
+            if (data is null || string.IsNullOrEmpty(type)) return string.Empty;
+            return $"data:image/{type};base64,{Convert.ToBase64String(data)}";
         }
     }
-
 
 }
