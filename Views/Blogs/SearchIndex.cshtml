@@ -24,40 +24,44 @@
                     <div class="card-body">
                         <h5 class="card-title">@blog.Name</h5>
                         <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn btn-primary">Read more</a>
+                        <a href="#" class="btn btn-primary">Go somewhere</a>
                     </div>
-                 </div>
+                </div>
             }
         }
     </div>
 </div>
 
 <!--blog next/previous links--></
-<div class="row">
-    <div class="col pt-3">
+<div class="row mt-2">
+    <div class="col">
         @{
             var previousDisabled = !Model.HasPreviousPage ? "disabled" : "";
             var nextDisabled = !Model.HasNextPage ? "disabled" : "";
         }
- 
+
         <nav aria-label="Page navigation example">
             <ul class="pagination">
                 <li class="page-item">
-                    <a asp-action="Index" aria-label="Previous"
+                    <a asp-action="SearchIndex" aria-label="Previous"
                        asp-route-pageIndex="@(Model.PageIndex - 1)"
-                       class="btn btn-outline-dark @previousDisabled">
+                       asp-route-searchInput="@ViewBag.searchInput"
+                       class="page-link @previousDisabled">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
-                <li class="page-item ms-1">
-                    <a asp-action="Index" aria-label="Next"
+                <li class="page-item">
+                    <a asp-action="SearchIndex" aria-label="Next"
                        asp-route-pageIndex="@(Model.PageIndex + 1)"
-                       class="btn btn-outline-dark @nextDisabled">
+                       asp-route-searchInput="@ViewBag.searchInput"
+                       class="page-link @nextDisabled">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
             </ul>
         </nav>
-    </div>    
+    </div>
 </div>
+
+
 

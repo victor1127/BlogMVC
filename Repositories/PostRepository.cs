@@ -1,37 +1,59 @@
-﻿using BlogMVC.Models;
+﻿using BlogMVC.Data;
+using BlogMVC.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogMVC.Repositories
 {
     public class PostRepository : IBlogRepository<Post>
     {
-        public Task Add(Post entity)
+        private readonly ApplicationDbContext _context;
+
+        public PostRepository(ApplicationDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
         }
 
-        public Task Delete(int id)
+        public async Task Add(Post entity)
         {
-            throw new NotImplementedException();
+            _context.Posts.Add(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public Task<Post?> FindById(int id)
+        public async Task Delete(int id)
         {
-            throw new NotImplementedException();
+            var post = await GetById(id);
+
+            if (post is not null)
+            {
+                _context.Remove(post);
+                await _context.SaveChangesAsync();
+            }
+
         }
 
-        public Task<IEnumerable<Post>?> GetAll()
+        public async Task<Post?> FindById(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Posts.FirstOrDefaultAsync(b => b.Id == id);
         }
 
-        public Task<Post?> GetById(int id)
+        public async Task<IEnumerable<Post>?> GetAll()
         {
-            throw new NotImplementedException();
+            return await _context.Posts.ToListAsync();
         }
 
-        public Task Update(Post entity)
+        public async Task<Post?> GetById(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Posts.Include(p => p.Author)
+                                       .Include(p => p.Blog)
+                                       .Include(p => p.Tags)
+                                       .Include(p => p.Comments)
+                                       .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task Update(Post entity)
+        {
+            _context.Update(entity);
+            await _context.SaveChangesAsync();
         }
     }
 

@@ -4,6 +4,12 @@ namespace BlogMVC.Services
 {
     public class ImageService
     {
+        private readonly IConfiguration _configuration;
+        public ImageService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public async Task<byte[]?> EncodeImageAsync(IFormFile file)
         {
             if (file is null) return null;
@@ -22,7 +28,7 @@ namespace BlogMVC.Services
 
         public string DecodeImage(byte[] data, string type)
         {
-            if (data is null || string.IsNullOrEmpty(type)) return string.Empty;
+            if (data is null || string.IsNullOrEmpty(type)) return _configuration["DefaultImg"]; ;
             return $"data:image/{type};base64,{Convert.ToBase64String(data)}";
         }
     }

@@ -11,6 +11,8 @@ using BlogMVC.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using BlogMVC.Services;
 using Microsoft.AspNetCore.Identity;
+using BlogMVC.Helpers;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace BlogMVC.Controllers
 {
@@ -19,6 +21,9 @@ namespace BlogMVC.Controllers
         private readonly IBlogRepository<Blog> blogContext;
         private readonly ImageService imageService;
         private readonly UserManager<BlogUser> userManager;
+        private readonly int PageSize = 8;
+        private PaginatedList<Blog> paginatedBlogs { get; set; }
+
 
         public BlogsController(IBlogRepository<Blog> blogRepository, 
                                 ImageService imageService,
@@ -33,12 +38,35 @@ namespace BlogMVC.Controllers
 
 
         // GET: Blogs
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageIndex)
         {
             var blogs = await blogContext.GetAll();
-            return View(blogs);
+            blogs?.OrderByDescending(b => b.Created);
+
+            pageIndex = pageIndex ?? 1;
+
+            paginatedBlogs = PaginatedList<Blog>.CreateAsync(blogs, (int)pageIndex, PageSize);
+            return View(paginatedBlogs);
         }
 
+        public async Task<IActionResult> SearchIndex(int? pageIndex, string searchInput)
+        {           
+            var blogs = await blogContext.GetAll();
+            pageIndex = pageIndex ?? 1;
+
+            if (searchInput != null)
+            {
+                blogs = blogs?.Where(
+                    b => b.Name.Contains(searchInput) ||
+                    b.Description.Contains(searchInput));
+            }
+
+            ViewData["searchInput"] = searchInput;
+            blogs = blogs?.OrderByDescending(b => b.Created);
+            paginatedBlogs = PaginatedList<Blog>.CreateAsync(blogs, (int)pageIndex, PageSize);
+            
+            return View(paginatedBlogs);
+        }
 
 
         // GET: Blogs/Details/5
@@ -69,8 +97,11 @@ namespace BlogMVC.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,ImageFile")] Blog blog)
+        public async Task<IActionResult> Create([Bind("Name,Description")] Blog blog)
         {
+            ModelState.Remove("AuthorId");
+            ModelState.Remove("Author");
+
             if (ModelState.IsValid)
             {
                 blog.AuthorId = userManager.GetUserId(User);
@@ -120,7 +151,7 @@ namespace BlogMVC.Controllers
                 if (blog.ImageFile != null)
                 {
                     blog.ContentType = blog.ImageFile?.ContentType;
-                    blog.ImageData = imageService.ConvertFileToByte(blog.ImageFile);
+                    blog.ImageData = await imageService.EncodeImageAsync(blog.ImageFile);
                 }
 
                 blog.Updated = DateTime.Now;

@@ -22,12 +22,10 @@ namespace BlogMVC.Repositories
             await _context.SaveChangesAsync();
         }
 
-
         public async Task<IEnumerable<Blog>?> GetAll()
         {
             return await _context.Blogs.ToListAsync();
         }
-
 
         public async Task<Blog?> GetById(int id)
         {
@@ -41,15 +39,11 @@ namespace BlogMVC.Repositories
             return await _context.Blogs.FirstOrDefaultAsync(b => b.Id == id);
         }
 
-
-
         public async Task Update(Blog entity)
         {
             _context.Update(entity);
             await _context.SaveChangesAsync();
         }
-
-
 
         public async Task Delete(int id)
         {
@@ -62,6 +56,7 @@ namespace BlogMVC.Repositories
             await _context.SaveChangesAsync();
 
         }
+
     }
 
 }
