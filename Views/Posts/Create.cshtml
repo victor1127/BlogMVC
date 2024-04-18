@@ -17,46 +17,47 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
 }
+<div class="container pt-4">
+    <h1>New Post</h1>
+    <hr />
 
-<h1>New Post</h1>
-
-<hr />
-
-<form asp-action="Create" enctype="multipart/form-data">
-    <div class="row mb-5">
-        <div class="col-md-4">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group mb-2">
-                <label asp-for="BlogId" class="form-text">Select a blog</label>
-                <select asp-for="BlogId" class="form-select" asp-items="ViewBag.Blogs" required ></select>
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div class="row mb-5">
+            <div class="col-md-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group mb-2">
+                    <label asp-for="BlogId" class="form-text">Select a blog</label>
+                    <select asp-for="BlogId" class="form-select" asp-items="ViewBag.Blogs" required></select>
+                </div>
+                <div class="form-group mb-2">
+                    <label asp-for="Title" class="form-text">Title</label>
+                    <input asp-for="Title" class="form-control" required placeholder="Title" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-2">
+                    <label asp-for="PostState" class="form-text">Status </label>
+                    <select asp-for="PostState" class="form-select" asp-items="@Html.GetEnumSelectList<PostState>()"></select>
+                    <span asp-validation-for="PostState" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-2">
+                    <label asp-for="ImageFile" class="form-text">Cover Image</label>
+                    <input asp-for="ImageFile" type="file" class="form-control" />
+                    <span asp-validation-for="ImageData" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
             </div>
-            <div class="form-group mb-2">
-                <label asp-for="Title" class="form-text">Title</label>
-                <input asp-for="Title" class="form-control" required placeholder="Title"/>
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-2">
-                <label asp-for="PostState" class="form-text">Status </label>
-                <select asp-for="PostState" class="form-select" asp-items="@Html.GetEnumSelectList<PostState>()"></select>
-                <span asp-validation-for="PostState" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-2">
-                <label asp-for="ImageFile" class="form-text">Cover Image</label>
-                <input asp-for="ImageFile" type="file" class="form-control" />
-                <span asp-validation-for="ImageData" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <div class="col">
+                <div class="form-group">
+                    <textarea id="newPostContent" asp-for="Content" class="form-control contentTextarea"></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
             </div>
         </div>
-        <div class="col">
-            <div class="form-group">
-                <textarea id="newPostContent" asp-for="Content" class="form-control contentTextarea"></textarea>
-                <span asp-validation-for="Content" class="text-danger"></span>
-            </div>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
+
 
 
 @section Scripts {
