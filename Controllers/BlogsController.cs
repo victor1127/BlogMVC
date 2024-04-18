@@ -20,18 +20,20 @@ namespace BlogMVC.Controllers
     {
         private readonly IBlogRepository<Blog> blogContext;
         private readonly ImageService imageService;
+        private readonly SignInManager<IdentityUser> signInManager;
         private readonly UserManager<BlogUser> userManager;
-        private readonly int PageSize = 8;
-        private PaginatedList<Blog> paginatedBlogs { get; set; }
+        private readonly IConfiguration _configuration;
 
 
-        public BlogsController(IBlogRepository<Blog> blogRepository, 
+        public BlogsController(IBlogRepository<Blog> blogRepository,
                                 ImageService imageService,
-                                UserManager<BlogUser> manager)
+                                UserManager<BlogUser> manager,
+                                IConfiguration configuration)
         {
             blogContext = blogRepository;
             this.imageService = imageService;
-            userManager = manager;    
+            userManager = manager;
+            _configuration = configuration;
         }
 
 
@@ -45,32 +47,35 @@ namespace BlogMVC.Controllers
 
             pageIndex = pageIndex ?? 1;
 
-            paginatedBlogs = PaginatedList<Blog>.CreateAsync(blogs, (int)pageIndex, PageSize);
+            var paginatedBlogs = PaginatedList<Blog>.CreateAsync(blogs, (int)pageIndex, int.Parse(_configuration["PageSize"]));
             return View(paginatedBlogs);
         }
 
         public async Task<IActionResult> SearchIndex(int? pageIndex, string searchInput)
         {           
             var blogs = await blogContext.GetAll();
+
             pageIndex = pageIndex ?? 1;
 
             if (searchInput != null)
             {
+                searchInput = searchInput.ToLower();
+
                 blogs = blogs?.Where(
-                    b => b.Name.Contains(searchInput) ||
-                    b.Description.Contains(searchInput));
+                    b => b.Name.ToLower().Contains(searchInput) ||
+                    b.Description.ToLower().Contains(searchInput));
             }
 
             ViewData["searchInput"] = searchInput;
             blogs = blogs?.OrderByDescending(b => b.Created);
-            paginatedBlogs = PaginatedList<Blog>.CreateAsync(blogs, (int)pageIndex, PageSize);
+            var paginatedBlogs = PaginatedList<Blog>.CreateAsync(blogs, (int)pageIndex, int.Parse(_configuration["PageSize"]));
             
             return View(paginatedBlogs);
         }
 
 
         // GET: Blogs/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, int? pageIndex)
         {
             if (id == null)
             {
@@ -83,7 +88,13 @@ namespace BlogMVC.Controllers
                 return NotFound();
             }
 
-            return View(blog);
+            blog.Posts?.OrderByDescending(p => p.Created);
+            pageIndex = pageIndex ?? 1;
+            ViewData["BlogId"] = blog?.Id;
+
+            var paginatedBlogs = PaginatedList<Post>.CreateAsync(blog.Posts, (int)pageIndex, int.Parse(_configuration["PageSize"]));
+            return View(paginatedBlogs);
+
         }
 
 

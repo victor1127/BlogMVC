@@ -1,5 +1,6 @@
 ﻿using BlogMVC.Data;
 using BlogMVC.Models;
+using BlogMVC.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 
@@ -24,13 +25,14 @@ namespace BlogMVC.Repositories
 
         public async Task<IEnumerable<Blog>?> GetAll()
         {
-            return await _context.Blogs.ToListAsync();
+            return await _context.Blogs.Include(b => b.Author).ToListAsync();
         }
 
         public async Task<Blog?> GetById(int id)
         {
             return await _context.Blogs
-                .Include(b => b.Posts)
+                .Include(b => b.Posts.Where(p => p.PostState == PostState.Ready))
+                .ThenInclude(p => p.Author)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
 

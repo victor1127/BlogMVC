@@ -2,8 +2,7 @@
 {
     public enum PostState
     {
-        Complete,
-        Incomplete,
-        Preview
+        Ready,
+        Draft,
     }
 }

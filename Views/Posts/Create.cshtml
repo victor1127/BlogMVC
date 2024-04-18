@@ -1,81 +1,80 @@
-﻿@model BlogMVC.Models.Post
+﻿@using BlogMVC.Data
+@using BlogMVC.Enums
+@using Microsoft.AspNetCore.Identity
+@model BlogMVC.Models.Post
+@inject UserManager<BlogUser> userManager
 
 @{
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+@section Styles{
+    <!-- include libraries(jQuery, bootstrap) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 
-<h4>Post</h4>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+}
+
+<h1>New Post</h1>
+
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+
+<form asp-action="Create" enctype="multipart/form-data">
+    <div class="row mb-5">
+        <div class="col-md-4">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="BlogId" class="control-label"></label>
-                <select asp-for="BlogId" class ="form-control" asp-items="ViewBag.BlogId"></select>
+            <div class="form-group mb-2">
+                <label asp-for="BlogId" class="form-text">Select a blog</label>
+                <select asp-for="BlogId" class="form-select" asp-items="ViewBag.Blogs" required ></select>
             </div>
-            <div class="form-group">
-                <label asp-for="AuthorId" class="control-label"></label>
-                <select asp-for="AuthorId" class ="form-control" asp-items="ViewBag.AuthorId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
+            <div class="form-group mb-2">
+                <label asp-for="Title" class="form-text">Title</label>
+                <input asp-for="Title" class="form-control" required placeholder="Title"/>
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Preview" class="control-label"></label>
-                <input asp-for="Preview" class="form-control" />
-                <span asp-validation-for="Preview" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Content" class="control-label"></label>
-                <input asp-for="Content" class="form-control" />
-                <span asp-validation-for="Content" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PostState" class="control-label"></label>
-                <select asp-for="PostState" class="form-control"></select>
+            <div class="form-group mb-2">
+                <label asp-for="PostState" class="form-text">Status </label>
+                <select asp-for="PostState" class="form-select" asp-items="@Html.GetEnumSelectList<PostState>()"></select>
                 <span asp-validation-for="PostState" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Slug" class="control-label"></label>
-                <input asp-for="Slug" class="form-control" />
-                <span asp-validation-for="Slug" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Created" class="control-label"></label>
-                <input asp-for="Created" class="form-control" />
-                <span asp-validation-for="Created" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Updated" class="control-label"></label>
-                <input asp-for="Updated" class="form-control" />
-                <span asp-validation-for="Updated" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ImageData" class="control-label"></label>
-                <input asp-for="ImageData" class="form-control" />
+            <div class="form-group mb-2">
+                <label asp-for="ImageFile" class="form-text">Cover Image</label>
+                <input asp-for="ImageFile" type="file" class="form-control" />
                 <span asp-validation-for="ImageData" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ContentType" class="control-label"></label>
-                <input asp-for="ContentType" class="form-control" />
-                <span asp-validation-for="ContentType" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
-        </form>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <textarea id="newPostContent" asp-for="Content" class="form-control contentTextarea"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+        </div>
     </div>
-</div>
+</form>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@*     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+ *@
+
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+
+    <!-- include summernote css/js -->
+    <script>
+        $(document).ready(function () {
+            $('#newPostContent').summernote({
+                placeholder: "Write your content here",
+                height: 800,
+                width:700
+            });
+        });
+
+    </script>
 }

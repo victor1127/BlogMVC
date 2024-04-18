@@ -12,6 +12,9 @@ using BlogMVC.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using BlogMVC.Helpers;
+using System.Drawing.Printing;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BlogMVC.Controllers
 {
@@ -20,18 +23,18 @@ namespace BlogMVC.Controllers
         private readonly IBlogRepository<Post> _context;
         private readonly IBlogRepository<Tag> _tagContext;
         private readonly IBlogRepository<Blog> _blogContext;
-
-
+        private readonly IConfiguration _configuration;
         private readonly ImageService imageService;
         private readonly UserManager<BlogUser> userManager;
 
-        public PostsController(ApplicationDbContext context, IBlogRepository<Post> postContext, ImageService imageService, UserManager<BlogUser> userManager, IBlogRepository<Tag> tagContext, IBlogRepository<Blog> blogContext)
+        public PostsController(ApplicationDbContext context, IBlogRepository<Post> postContext, ImageService imageService, UserManager<BlogUser> userManager, IBlogRepository<Tag> tagContext, IBlogRepository<Blog> blogContext, IConfiguration configuration)
         {
             this._context = postContext;
             this.imageService = imageService;
             this.userManager = userManager;
             _tagContext = tagContext;
             _blogContext = blogContext;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Index()
@@ -40,6 +43,23 @@ namespace BlogMVC.Controllers
             return View(posts);
         }
 
+        public async Task<IActionResult> SearchIndex(int? pageIndex, string searchInput)
+        {
+            var posts = await _context.GetAll();
+            pageIndex = pageIndex ?? 1;
+
+            if (searchInput != null)
+            {
+                searchInput = searchInput.ToLower();
+                posts = posts?.Where(p => p.Title.ToLower().Contains(searchInput));
+            }
+
+            ViewData["searchInput"] = searchInput;
+            posts = posts?.OrderByDescending(b => b.Created);
+            var paginatedPosts = PaginatedList<Post>.CreateAsync(posts, (int)pageIndex, int.Parse(_configuration["PageSize"]));
+
+            return View(paginatedPosts);
+        }
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -57,9 +77,10 @@ namespace BlogMVC.Controllers
             return View(post);
         }
 
+        [Authorize]
         public async Task<IActionResult> Create()
         {
-            ViewData["BlogId"] = new SelectList(await _blogContext.GetAll(), "Id", "AuthorId");
+            ViewData["Blogs"] = new SelectList(await _blogContext.GetAll(), "Id", "Name");
             return View();
         }
 
@@ -67,13 +88,18 @@ namespace BlogMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BlogId,Title,Preview,Content,PostState,Slug,ImageFile")] Post post, List<string> tags)
+        public async Task<IActionResult> Create([Bind("BlogId,Title,Preview, Content,PostState,ImageFile")] Post post, List<string> tags)
         {
+            ModelState.Remove("Blog");
+            ModelState.Remove("Author");
+            ModelState.Remove("AuthorId");
+            ModelState.Remove("Preview");
+
             if (ModelState.IsValid)
             {
-                var authorId = userManager.GetUserId(User);
+                post.AuthorId = userManager.GetUserId(User);
                 post.Created = DateTime.Now;
-                post.AuthorId = authorId;
+                post.Preview = "No preview available";
 
                 if (post.ImageFile != null)
                 {
@@ -87,7 +113,7 @@ namespace BlogMVC.Controllers
                 {
                     var tag = new Tag
                     {
-                        AuthorId = authorId,
+                        AuthorId = post.AuthorId,
                         PostId = post.Id,
                         Content = tagText
                     };
@@ -98,7 +124,7 @@ namespace BlogMVC.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["BlogId"] = new SelectList(await _blogContext.GetAll(), "Id", "AuthorId", post.Id);
+            ViewData["Blogs"] = new SelectList(await _blogContext.GetAll(), "Id", "Name");
             ViewData["TagValues"] = string.Join(",", tags);
 
             return View(post);
@@ -124,9 +150,7 @@ namespace BlogMVC.Controllers
             return View(post);
         }
 
-        // POST: Posts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("BlogId,Title,Preview,Content,PostState, ImageFile")] Post post, List<string> tags)
