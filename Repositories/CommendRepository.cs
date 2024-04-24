@@ -1,12 +1,27 @@
-﻿using BlogMVC.Models;
+﻿using BlogMVC.Data;
+using BlogMVC.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogMVC.Repositories
 {
     public class CommendRepository : IBlogRepository<Comment>
     {
-        public Task Add(Comment entity)
+        private readonly ApplicationDbContext _context;
+
+        public CommendRepository(ApplicationDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
+        }
+
+
+
+
+
+
+        public async Task Add(Comment entity)
+        {
+             _context.Comments.Add(entity);
+            await _context.SaveChangesAsync();
         }
 
         public Task Delete(int id)
@@ -24,14 +39,15 @@ namespace BlogMVC.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<Comment?> GetById(int id)
+        public async Task<Comment?> GetById(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Comments.Include(c => c.Author).Include(c => c.Post).FirstOrDefaultAsync(c => c.Id == id);
         }
 
-        public Task Update(Comment entity)
+        public async Task Update(Comment entity)
         {
-            throw new NotImplementedException();
+            _context.Update(entity);
+            await _context.SaveChangesAsync();
         }
     }
 

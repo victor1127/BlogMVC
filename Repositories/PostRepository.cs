@@ -46,7 +46,7 @@ namespace BlogMVC.Repositories
             return await _context.Posts.Include(p => p.Author)
                                        .Include(p => p.Blog)
                                        .Include(p => p.Tags)
-                                       .Include(p => p.Comments)
+                                       .Include(p => p.Comments.OrderByDescending(c => c.Created))
                                        .FirstOrDefaultAsync(p => p.Id == id);
         }
 

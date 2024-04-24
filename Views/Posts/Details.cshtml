@@ -1,10 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using BlogMVC.Data
+@using BlogMVC.Services
 
 @model BlogMVC.Models.Post
 
 @inject SignInManager<BlogUser> singInManager
 @inject UserManager<BlogUser> userManager
+@inject ImageService imageService
+
 
 @{
     ViewData["Title"] = "Details";
@@ -13,27 +16,127 @@
 
 <div class="container">
     <div class="row pt-5">
-        <div class="col-sm-9">
+        <div class="col-md-9">
             <h4 class="fw-bold text-center">@Model.Title</h4>
             <div class="d-flex justify-content-center p-3 border-end">
                 <div>
                     <p class="text-wrap">@Html.Raw(Model.Content)</p>
                 </div>
             </div>
+            <div>
+                @if (singInManager.IsSignedIn(User) && (userId == Model.AuthorId))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
+                }
+
+                |<a class="" asp-controller="Blogs" asp-action="Details" asp-route-id="@Model.BlogId">Back to List</a>
+            </div>
+
+            <!--Add Comment section -->
+            <div class="pt-5">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <h5>Comments</h5>
+                    <form asp-controller="Comments" asp-action="Create">
+                        <input name="PostId" asp-for="Id" hidden/>
+                        <div class="form-group">
+                            <textarea name="Body" placeholder="Add a comment" class="form-control commentTextarea" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-secondary-color text-light mt-2">Add comment</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sm btn-primary w-100">Log in to comment</a>
+                }
+
+            </div>
+
+            <!--Display comments-->
+            <div id="commentSection" class="mt-5">
+                @{
+                    foreach (var comment in Model.Comments)
+                    {
+                        <div class="p-3 mt-3 d-flex border rounded">
+                            <div class="flex-shrink-0">
+                                <img src="@imageService.DecodeImage(@comment.Author.UserImageData, comment.Author.ContentType)" alt="Profile image" style="width:50px; border-radius:20%">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <span class="fw-bold d-block">@comment.Author.FullName</span>
+                                <span class="text-muted d-block">Posted On: @comment.Created.ToString("MMM dd, yyyy")</span>
+                                <p class="pt-3">@comment.Body</p>
+
+                                @{
+                                    if (User.Identity.IsAuthenticated && userId == comment.AuthorId)
+                                    {
+                                        <div class="text-end">
+                                            <a type="button" class="btn btn-modal" data-bs-toggle="modal" data-bs-target="#edit@(comment.Id)">
+                                                Edit
+                                            </a>
+
+                                            <a type="button" class="btn btn-modal" data-bs-toggle="modal" data-bs-target="#delete@(comment.Id)">
+                                                Delete
+                                            </a>
+
+                                        </div>
+                                    }
+                                }                           
+                            </div>
+                        </div>
+
+                        <!-- edit Modal -->
+                        <div class="modal fade" id="edit@(comment.Id)" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit comment</h1> 
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form asp-action="Edit" asp-controller="Comments" asp-route-id="@comment.Id">
+                                        <div class="modal-body">
+                                            <input asp-for="@comment.Id" hidden/>
+                                            <input asp-for="@comment.PostId" hidden />
+
+                                            <textarea class="form-control" asp-for="@comment.Body">@comment.Body</textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-secondary-color btn-sm">Save changes</button>
+                                        </div>                                     
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="delete@(comment.Id)" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Delete comment</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>@comment.Body</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
         </div>
-        <div class="col-sm-3">
+        <div class="col-md-3">
             <section>
                 <h6 class="fw-normal">Tags</h6>
             </section>
         </div>
     </div>
-    <div>
-        @if (singInManager.IsSignedIn(User) && (userId == Model.AuthorId))
-        {
-            <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> 
-        }
-        
-        |<a class="" asp-controller="Blogs" asp-action="Details" asp-route-id="@Model.BlogId">Back to List</a>
-    </div>
 </div>
+
 

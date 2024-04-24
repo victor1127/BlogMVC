@@ -21,7 +21,7 @@ namespace BlogMVC.Models
         [StringLength(500, MinimumLength = 2)]
         public string? ModeratedBody { get; set; }
 
-        public ModeratedReason ModeratedReason { get; set; }
+        public ModeratedReason? ModeratedReason { get; set; }
         public DateTime Created { get; set; }
         public DateTime? Updated { get; set; }
 

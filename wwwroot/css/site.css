@@ -5,6 +5,7 @@
 
 .btn-secondary-color{
     background-color: var(--secondary-color);
+    color:whitesmoke;
 }
 
 .btn-secondary-color:hover {
@@ -13,6 +14,16 @@
 
 a{
     color: var(--secondary-color);
+}
+
+.btn-modal{
+    color: var(--secondary-color);
+}
+.btn-modal:hover {
+    color: blue;
+}
+a:hover {
+    color: blue;
 }
 html {
     font-size: 14px;
@@ -54,7 +65,11 @@ a {
     height: 500px;
     min-height: 300px !important;
     max-height: 500px;
-    overflow-y:auto;
+}
+
+.commentTextarea {
+    height:200px;
+    max-height: 200px;
 }
 
 .blog-img-header-img {
