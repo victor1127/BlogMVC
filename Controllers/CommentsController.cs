@@ -144,6 +144,31 @@ namespace BlogMVC.Controllers
 
         }
 
+        public async Task<IActionResult> Moderate(int id, [Bind("Id, PostId, ModeratedReason")] Comment comment)
+        {
+            if (id != comment.Id)
+            {
+                return NotFound();
+            }
+
+            ModelState.Remove("Comment.Post");
+            ModelState.Remove("Comment.Author");
+            ModelState.Remove("Comment.AuthorId");
+            ModelState.Remove("Comment.Body");
+
+
+            if (ModelState.IsValid)
+            {
+                comment.Updated = DateTime.Now;
+                var newComment = await _commentContext.GetById(comment.Id);
+                newComment.ModeratedReason = comment.ModeratedReason;
+                await _commentContext.Update(newComment);
+            }
+
+            return RedirectToAction("Details", "Posts", new { id = comment.PostId }, "commentSection");
+
+        }
+
         // GET: Comments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -152,31 +177,13 @@ namespace BlogMVC.Controllers
                 return NotFound();
             }
 
-            var comment = await _context.Comments
-                .Include(c => c.Author)
-                .Include(c => c.Post)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (comment == null)
-            {
-                return NotFound();
-            }
-
-            return View(comment);
-        }
-
-        // POST: Comments/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var comment = await _context.Comments.FindAsync(id);
+            var comment = await _commentContext.FindById((int)id);
             if (comment != null)
             {
-                _context.Comments.Remove(comment);
+                _commentContext.Delete(comment.Id);
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Details", "Posts", new {id = comment.PostId}, "commentSection");
         }
 
         private bool CommentExists(int id)

@@ -24,9 +24,12 @@ namespace BlogMVC.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public Task Delete(int id)
+        public async Task Delete(int id)
         {
-            throw new NotImplementedException();
+            var blog = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
+            
+            _context.Remove(blog);
+            await _context.SaveChangesAsync();
         }
 
         public Task<Comment?> FindById(int id)

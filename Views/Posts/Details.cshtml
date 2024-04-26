@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using BlogMVC.Data
+@using BlogMVC.Enums
 @using BlogMVC.Services
 
 @model BlogMVC.Models.Post
@@ -64,20 +65,47 @@
                             <div class="flex-grow-1 ms-3">
                                 <span class="fw-bold d-block">@comment.Author.FullName</span>
                                 <span class="text-muted d-block">Posted On: @comment.Created.ToString("MMM dd, yyyy")</span>
-                                <p class="pt-3">@comment.Body</p>
+                                @{
+                                    var alert = (comment.ModeratedReason == null) ? "" : "text-danger";
+                                }
+
+                                <p class="pt-3 @alert">
+                                    @{
+                                        var display = (comment.ModeratedReason == null) ? comment.Body : $"Moderated ({comment.ModeratedReason})";
+                                    }
+                                    @display
+                                </p>
 
                                 @{
-                                    if (User.Identity.IsAuthenticated && userId == comment.AuthorId)
+                                    if ((User.Identity.IsAuthenticated && userId == comment.AuthorId) ||
+                                            User.IsInRole(Roles.Moderator.ToString()) || User.IsInRole(Roles.Adm.ToString()))
                                     {
                                         <div class="text-end">
-                                            <a type="button" class="btn btn-modal" data-bs-toggle="modal" data-bs-target="#edit@(comment.Id)">
-                                                Edit
-                                            </a>
+                                            
+                                            @{
+                                                if (User.IsInRole(Roles.Moderator.ToString()))
+                                                {
+                                                    <!--Moderate-->
+                                                    <a type="button" class="btn btn-modal" data-bs-toggle="modal" data-bs-target="#moderate@(comment.Id)">
+                                                        Moderate
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    if (userId == comment.AuthorId && comment.ModeratedReason == null)
+                                                    {
+                                                        <!--Edit-->
+                                                        <a type="button" class="btn btn-modal" data-bs-toggle="modal" data-bs-target="#edit@(comment.Id)">
+                                                            Edit
+                                                        </a>
+                                                    }                                                 
+                                                }
+                                            }
 
+                                            <!--Delete-->
                                             <a type="button" class="btn btn-modal" data-bs-toggle="modal" data-bs-target="#delete@(comment.Id)">
                                                 Delete
                                             </a>
-
                                         </div>
                                     }
                                 }                           
@@ -108,6 +136,30 @@
                             </div>
                         </div>
 
+                        <!-- Moderate Modal -->
+                        <div class="modal fade" id="moderate@(comment.Id)" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit comment</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form asp-action="Moderate" asp-controller="Comments" asp-route-id="@comment.Id">
+                                        <div class="modal-body">
+                                            <input asp-for="@comment.Id" hidden />
+                                            <input asp-for="@comment.PostId" hidden />
+
+                                            <select class="form-select" asp-for="@comment.ModeratedReason" asp-items="@Html.GetEnumSelectList<ModeratedReason>()">@comment.Body</select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-secondary-color btn-sm">Save changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Delete Modal -->
                         <div class="modal fade" id="delete@(comment.Id)" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
@@ -116,13 +168,15 @@
                                         <h1 class="modal-title fs-5" id="exampleModalLabel">Delete comment</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <p>@comment.Body</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary">Save changes</button>
-                                    </div>
+                                    <form asp-action="Delete" asp-controller="Comments" asp-route-id="@comment.Id">
+                                        <div class="modal-body">
+                                            <p>@comment.Body</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
