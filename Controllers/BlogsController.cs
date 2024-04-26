@@ -150,24 +150,31 @@ namespace BlogMVC.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,ImageFile")] Blog blog)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, Name,Description,ImageFile")] Blog blog)
         {
             if (id != blog.Id)
             {
                 return NotFound();
             }
 
+            ModelState.Remove("AuthorId"); 
+            ModelState.Remove("Author");
+
             if (ModelState.IsValid)
             {
+                var currentBlog = await blogContext.FindById(blog.Id);
+                if (currentBlog == null) return NotFound();
+
                 if (blog.ImageFile != null)
                 {
-                    blog.ContentType = blog.ImageFile?.ContentType;
-                    blog.ImageData = await imageService.EncodeImageAsync(blog.ImageFile);
+                    currentBlog.ContentType = blog.ImageFile?.ContentType;
+                    currentBlog.ImageData = await imageService.EncodeImageAsync(blog.ImageFile);
                 }
 
-                blog.Updated = DateTime.Now;
+                currentBlog.Name = blog.Name;
+                currentBlog.Description = blog.Description;
 
-                await blogContext.Update(blog);
+                await blogContext.Update(currentBlog);
                 return RedirectToAction(nameof(Index));
             }
 
